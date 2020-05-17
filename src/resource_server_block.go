@@ -8,12 +8,12 @@ import (
 	"stackhead.io/terraform-nginx-provider/src/nginx"
 )
 
-func resourceVhost() *schema.Resource {
+func resourceServerBlock() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVhostCreate,
-		Read:   resourceVhostRead,
-		Update: resourceVhostUpdate,
-		Delete: resourceVhostDelete,
+		Create: resourceServerBlockCreate,
+		Read:   resourceServerBlockRead,
+		Update: resourceServerBlockUpdate,
+		Delete: resourceServerBlockDelete,
 
 		Schema: map[string]*schema.Schema{
 			"filename": &schema.Schema{
@@ -38,27 +38,27 @@ func resourceVhost() *schema.Resource {
 	}
 }
 
-func resourceVhostCreate(d *schema.ResourceData, m interface{}) error {
+func resourceServerBlockCreate(d *schema.ResourceData, m interface{}) error {
 	config := m.(nginx.Config)
 
 	// Create file
 	content := d.Get("content").(string)
-	fullPathAvailable, err := nginx.CreateOrUpdateVhost(d.Get("filename").(string), content, config)
+	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config)
 	if err != nil {
 		return err
 	}
 
 	if config.EnableSymlinks && d.Get("enable").(bool) {
-		if err := nginx.EnableVhost(d.Get("filename").(string), config); err != nil {
+		if err := nginx.EnableServerBlock(d.Get("filename").(string), config); err != nil {
 			return err
 		}
 	}
 
 	d.SetId(fullPathAvailable)
-	return resourceVhostRead(d, m)
+	return resourceServerBlockRead(d, m)
 }
 
-func resourceVhostRead(d *schema.ResourceData, m interface{}) error {
+func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 	config := m.(nginx.Config)
 	availablePath := config.DirectoryAvailable
 	enabledPath := config.DirectoryEnabled
@@ -73,10 +73,10 @@ func resourceVhostRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceVhostUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServerBlockUpdate(d *schema.ResourceData, m interface{}) error {
 	// Content changed: replace old file content
 	if d.HasChange("content") {
-		_, err := nginx.CreateOrUpdateVhost(d.Id(), d.Get("content").(string), m.(nginx.Config))
+		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config))
 		if err != nil {
 			return err
 		}
@@ -85,11 +85,11 @@ func resourceVhostUpdate(d *schema.ResourceData, m interface{}) error {
 	// Enable changed: set or remove symlink site-enabled -> site-available
 	if d.HasChange("enable") {
 		if d.Get("enable").(bool) {
-			if err := nginx.EnableVhost(d.Get("filename").(string), m.(nginx.Config)); err != nil {
+			if err := nginx.EnableServerBlock(d.Get("filename").(string), m.(nginx.Config)); err != nil {
 				return err
 			}
 		} else {
-			if err := nginx.DisableVhost(d.Get("filename").(string), m.(nginx.Config)); err != nil {
+			if err := nginx.DisableServerBlock(d.Get("filename").(string), m.(nginx.Config)); err != nil {
 				return err
 			}
 		}
@@ -97,8 +97,8 @@ func resourceVhostUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceVhostDelete(d *schema.ResourceData, m interface{}) error {
-	if err := nginx.RemoveNginxVhost(d.Get("filename").(string), m.(nginx.Config)); err != nil {
+func resourceServerBlockDelete(d *schema.ResourceData, m interface{}) error {
+	if err := nginx.RemoveNginxServerBlock(d.Get("filename").(string), m.(nginx.Config)); err != nil {
 		return err
 	}
 	d.SetId("")

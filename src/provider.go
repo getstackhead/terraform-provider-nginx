@@ -24,11 +24,11 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Create symlink for enabled vhost resources. If false, all resources (regardless of enabled) will be created at directory_available.",
+				Description: "Create symlink for enabled server_block resources. If false, all resources (regardless of enabled) will be created at directory_available.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"nginx_vhost": resourceVhost(),
+			"nginx_server_block": resourceServerBlock(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
