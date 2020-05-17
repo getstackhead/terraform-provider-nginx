@@ -2,6 +2,13 @@
 
 This provider can be used to manage Nginx configurations.
 
+## Installation
+
+1. Download a binary from the [release section](https://github.com/getstackhead/terraform-nginx/releases).
+2. Install it into the user plugins directory.
+   * Windows: `%APPDATA%\terraform.d\plugins`
+   * other OS: `~/.terraform.d/plugins`
+
 ## Example Usage
 
 ### For Nginx from Ubuntu/Debian repositories
