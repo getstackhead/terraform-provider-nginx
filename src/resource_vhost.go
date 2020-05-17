@@ -19,10 +19,12 @@ func resourceVhost() *schema.Resource {
 			"filename": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"content": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"enable": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -54,13 +56,7 @@ func resourceVhostCreate(d *schema.ResourceData, m interface{}) error {
 func resourceVhostRead(d *schema.ResourceData, m interface{}) error {
 	config := m.(nginx.Config)
 	availablePath := config.DirectoryAvailable
-	if config.DirectoryAvailableChanged {
-		availablePath = config.DirectoryAvailableChangeOld
-	}
 	enabledPath := config.DirectoryEnabled
-	if config.DirectoryEnabledChanged {
-		enabledPath = config.DirectoryEnabledChangeOld
-	}
 	content, err := nginx.ReadFile(d.Id())
 	if err != nil {
 		return err
@@ -73,17 +69,6 @@ func resourceVhostRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVhostUpdate(d *schema.ResourceData, m interface{}) error {
-	// File name changed: move files in site-available and site-enabled folder (if exists)
-	if d.HasChange("filename") {
-		oldFileName, newFileName := d.GetChange("filename")
-
-		newFileAvailable, err := nginx.MoveNginxVhost(oldFileName.(string), newFileName.(string), m.(nginx.Config))
-		if err != nil {
-			return err
-		}
-		d.SetId(newFileAvailable)
-	}
-
 	// Content changed: replace old file content
 	if d.HasChange("content") {
 		_, err := nginx.CreateOrUpdateVhost(d.Id(), d.Get("content").(string), m.(nginx.Config))
