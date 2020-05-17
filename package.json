@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "semantic-release": "semantic-release",
+    "commit": "git-cz"
+  },
+  "devDependencies": {
+    "semantic-release": "^17.0.7",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/github": "^7.0.6",
+    "@semantic-release/release-notes-generator": "^9.0.1",
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0"
+  }
+}
