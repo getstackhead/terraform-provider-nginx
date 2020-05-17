@@ -17,34 +17,39 @@ func resourceVhost() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filename": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Name of the configuration file",
 			},
 			"content": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Content of the configuration file",
 			},
 			"enable": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether to enable the resource as active configuration. If symlinks were disabled in provider, this setting is ignored.",
 			},
 		},
 	}
 }
 
 func resourceVhostCreate(d *schema.ResourceData, m interface{}) error {
+	config := m.(nginx.Config)
+
 	// Create file
 	content := d.Get("content").(string)
-	fullPathAvailable, err := nginx.CreateOrUpdateVhost(d.Get("filename").(string), content, m.(nginx.Config))
+	fullPathAvailable, err := nginx.CreateOrUpdateVhost(d.Get("filename").(string), content, config)
 	if err != nil {
 		return err
 	}
 
-	if d.Get("enable").(bool) {
-		if err := nginx.EnableVhost(d.Get("filename").(string), m.(nginx.Config)); err != nil {
+	if config.EnableSymlinks && d.Get("enable").(bool) {
+		if err := nginx.EnableVhost(d.Get("filename").(string), config); err != nil {
 			return err
 		}
 	}

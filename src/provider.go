@@ -18,7 +18,13 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "/etc/nginx/sites-enabled",
-				Description: "Folder where enabled nginx configurations are stored. Set to empty string to disable symlinking",
+				Description: "Folder where enabled nginx configurations are stored. Not in use if enable_symlinks=false.",
+			},
+			"enable_symlinks": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Create symlink for enabled vhost resources. If false, all resources (regardless of enabled) will be created at directory_available.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -32,7 +38,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := nginx.Config{
 		DirectoryAvailable: d.Get("directory_available").(string),
 		DirectoryEnabled:   d.Get("directory_enabled").(string),
-		EnableSymlinks:     len(d.Get("directory_enabled").(string)) > 0,
+		EnableSymlinks:     d.Get("enable_symlinks").(bool),
 	}
 
 	return config, nil
