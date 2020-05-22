@@ -16,14 +16,14 @@ func getNginxDirectories(filename string, m Config) (string, string) {
 	return pathAvailable, pathEnabled
 }
 
-func CreateOrUpdateServerBlock(filename string, content string, m Config, markers map[string]string) (string, error) {
+func CreateOrUpdateServerBlock(filename string, content string, m Config, markers map[string]interface{}) (string, error) {
 	fullPathAvailable, _ := getNginxDirectories(filename, m)
 
 	// Replace markers in content
 	var re *regexp.Regexp
 	for key, value := range markers {
 		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}")
-		content = re.ReplaceAllString(content, value)
+		content = re.ReplaceAllString(content, value.(string))
 	}
 
 	if err := ioutil.WriteFile(fullPathAvailable, []byte(content), 0744); err != nil {

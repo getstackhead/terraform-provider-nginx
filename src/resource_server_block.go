@@ -49,7 +49,7 @@ func resourceServerBlockCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Create file
 	content := d.Get("content").(string)
-	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]string))
+	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]interface{}))
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 func resourceServerBlockUpdate(d *schema.ResourceData, m interface{}) error {
 	// Content changed: replace old file content
 	if d.HasChange("content") || d.HasChange("variables") {
-		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]string))
+		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]interface{}))
 		if err != nil {
 			return err
 		}
