@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 )
 
 func getNginxDirectories(filename string, m Config) (string, string) {
@@ -15,8 +16,16 @@ func getNginxDirectories(filename string, m Config) (string, string) {
 	return pathAvailable, pathEnabled
 }
 
-func CreateOrUpdateServerBlock(filename string, content string, m Config) (string, error) {
+func CreateOrUpdateServerBlock(filename string, content string, m Config, markers map[string]string) (string, error) {
 	fullPathAvailable, _ := getNginxDirectories(filename, m)
+
+	// Replace markers in content
+	var re *regexp.Regexp
+	for key, value := range markers {
+		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}")
+		content = re.ReplaceAllString(content, value)
+	}
+
 	if err := ioutil.WriteFile(fullPathAvailable, []byte(content), 0744); err != nil {
 		return "", err
 	}

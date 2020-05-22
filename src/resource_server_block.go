@@ -28,6 +28,12 @@ func resourceServerBlock() *schema.Resource {
 				ForceNew:    true,
 				Description: "Content of the configuration file",
 			},
+			"markers": &schema.Schema{
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Markers in content that should be replaced",
+			},
 			"enable": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -43,7 +49,7 @@ func resourceServerBlockCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Create file
 	content := d.Get("content").(string)
-	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config)
+	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]string))
 	if err != nil {
 		return err
 	}
@@ -75,8 +81,8 @@ func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceServerBlockUpdate(d *schema.ResourceData, m interface{}) error {
 	// Content changed: replace old file content
-	if d.HasChange("content") {
-		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config))
+	if d.HasChange("content") || d.HasChange("variables") {
+		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]string))
 		if err != nil {
 			return err
 		}
