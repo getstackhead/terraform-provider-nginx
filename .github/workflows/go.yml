@@ -36,7 +36,7 @@ jobs:
       - name: Semantic Release Action
         uses: saitho/semantic-release-action-pnpm@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     env:
       GIT_AUTHOR_EMAIL: 64205253+stackhead-bot@users.noreply.github.com
       GIT_AUTHOR_NAME: stackhead-bot
