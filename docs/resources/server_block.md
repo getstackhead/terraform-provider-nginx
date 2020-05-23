@@ -24,4 +24,4 @@ EOF
 * `filename` - (Required) Name of the configuration file
 * `content` - (Required) Content of the configuration file
 * `enable` - (Optional) Whether to enable the resource as active configuration. If symlinks were disabled in provider, this setting is ignored. Default: true
-* `markers`- (Optional) Key-Value map. Keys specified as marker (e.g. `{# key #}`) will be replaced by the assigned value.
+* `markers`- (Optional) Key-Value map. Keys specified as marker (e.g. `{# key #}`, `{~ key ~}`, `{* key *}`) will be replaced by the assigned value.
