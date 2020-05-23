@@ -22,7 +22,11 @@ func CreateOrUpdateServerBlock(filename string, content string, m Config, marker
 	// Replace markers in content
 	var re *regexp.Regexp
 	for key, value := range markers {
-		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}")
+		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}") // {#marker#}
+		content = re.ReplaceAllString(content, value.(string))
+		re, _ = regexp.Compile("{~\\s*" + key + "\\s*~}") // {~marker~}
+		content = re.ReplaceAllString(content, value.(string))
+		re, _ = regexp.Compile("{\\*\\s*" + key + "\\s*\\*}") // {*marker*}
 		content = re.ReplaceAllString(content, value.(string))
 	}
 
