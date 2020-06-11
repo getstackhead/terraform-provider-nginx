@@ -9,12 +9,18 @@ This resource represents a [server block configuration file](https://www.nginx.c
 resource "nginx_server_block" "my-server" {
   filename = "test.conf"
   enable = true
-  variables = {
+  markers = {
     docker_port = docker_container.web.ports.external
+    docker_ports = [
+      docker_container.web.ports.external,
+      docker_container.web2.ports.external
+    ]
   }
   content = <<EOF
 # content of file here
 # external docker port is: {# docker_port #}
+# access web port in array: {# docker_ports[0] #}
+# access web2 port in array: {# docker_ports[1] #}
 EOF
 }
 ```
