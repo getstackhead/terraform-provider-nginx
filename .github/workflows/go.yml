@@ -41,6 +41,11 @@ jobs:
         working-directory: src
         run: go build -o ../dist/terraform-provider-nginx .
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: dist/terraform-provider-nginx
+
       - name: Setup node
         uses: actions/setup-node@v1
         with:
