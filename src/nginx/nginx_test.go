@@ -23,8 +23,6 @@ func TestMarkers(t *testing.T) {
 	assert.Equal(t, "Marker is bar with bar2", text)
 	text = ReplaceMarkers("Marker is {* foo *} with {* fooArr[1] *}", processedMarkers)
 	assert.Equal(t, "Marker is bar with bar2", text)
-	text = ReplaceMarkers("Marker is {# foo #} with {# fooArr[1] #}", processedMarkers)
-	assert.Equal(t, "Marker is bar with bar2", text)
 	text = ReplaceMarkers("Marker is {# foo #} with {# fooArr[99] #}", processedMarkers)
 	assert.Equal(t, "Marker is bar with ", text)
 }

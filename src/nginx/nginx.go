@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -31,7 +32,16 @@ func CreateOrUpdateServerBlock(filename string, content string, m Config, marker
 /// ReplaceMarkers replaces all markers in given content
 func ReplaceMarkers(content string, markers map[string]string) string {
 	var re *regexp.Regexp
-	for key, value := range markers {
+
+	// Sort keys to avoid random order
+	keys := make([]string, 0, len(markers))
+	for k := range markers {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		value := markers[key]
 		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}") // {#marker#}
 		content = re.ReplaceAllString(content, value)
 		re, _ = regexp.Compile("{~\\s*" + key + "\\s*~}") // {~marker~}
@@ -43,16 +53,16 @@ func ReplaceMarkers(content string, markers map[string]string) string {
 }
 
 /// ProcessMarkers resolves array values into single string replaces
-func ProcessMarkers(markers map[string]interface{}, markers_split map[string]interface{}) map[string]string {
-	markers_split_keys := make([]string, 0, len(markers_split))
-	for k := range markers_split {
-		markers_split_keys = append(markers_split_keys, k)
+func ProcessMarkers(markers map[string]interface{}, markersSplit map[string]interface{}) map[string]string {
+	markersSplitKeys := make([]string, 0, len(markersSplit))
+	for k := range markersSplit {
+		markersSplitKeys = append(markersSplitKeys, k)
 	}
 
 	output := make(map[string]string)
 	for key, value := range markers {
 		stringValue := value.(string)
-		splitChar := markers_split[key]
+		splitChar := markersSplit[key]
 		if splitChar == nil || splitChar.(string) == "" {
 			output[key] = regexp.QuoteMeta(stringValue)
 			continue
