@@ -1,8 +1,6 @@
 package nginx
 
 import (
-	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,19 +17,14 @@ func TestMarkers(t *testing.T) {
 	}
 	processedMarkers := ProcessMarkers(markers, markersSplit)
 
-	assert.Equal(t, markers["foo"], processedMarkers["foo"])
-
-	// Assert array was processed
-	for i, v := range strings.Split(markers["fooArr"].(string), markersSplit["fooArr"].(string)) {
-		assert.Equal(t, v, processedMarkers[fmt.Sprintf("fooArr[%d]", i)])
-	}
-
 	text := ReplaceMarkers("Marker is {# foo #} with {# fooArr[1] #}", processedMarkers)
-	assert.Equal(t, text, "Marker is bar with bar2")
+	assert.Equal(t, "Marker is bar with bar2", text)
 	text = ReplaceMarkers("Marker is {~ foo ~} with {~ fooArr[1] ~}", processedMarkers)
-	assert.Equal(t, text, "Marker is bar with bar2")
+	assert.Equal(t, "Marker is bar with bar2", text)
 	text = ReplaceMarkers("Marker is {* foo *} with {* fooArr[1] *}", processedMarkers)
-	assert.Equal(t, text, "Marker is bar with bar2")
+	assert.Equal(t, "Marker is bar with bar2", text)
 	text = ReplaceMarkers("Marker is {# foo #} with {# fooArr[1] #}", processedMarkers)
-	assert.Equal(t, text, "Marker is bar with bar2")
+	assert.Equal(t, "Marker is bar with bar2", text)
+	text = ReplaceMarkers("Marker is {# foo #} with {# fooArr[99] #}", processedMarkers)
+	assert.Equal(t, "Marker is bar with ", text)
 }
