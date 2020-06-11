@@ -44,3 +44,28 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: dist/terraform-provider-nginx
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: terraform-provider-nginx
+          path: dist/terraform-provider-nginx
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: PNPM install
+        run: npm i -g pnpm && pnpm i -P
+      - run: pnpm install
+      - name: Semantic Release Action
+        uses: saitho/semantic-release-action-pnpm@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    env:
+      GIT_AUTHOR_EMAIL: 64205253+stackhead-bot@users.noreply.github.com
+      GIT_AUTHOR_NAME: stackhead-bot
+      GIT_COMMITTER_EMAIL: 64205253+stackhead-bot@users.noreply.github.com
+      GIT_COMMITTER_NAME: stackhead-bot
