@@ -32,12 +32,11 @@ func CreateOrUpdateServerBlock(filename string, content string, m Config, marker
 func ReplaceMarkers(content string, markers map[string]string) string {
 	var re *regexp.Regexp
 	for key, value := range markers {
-		quotedKey := regexp.QuoteMeta(key)
-		re, _ = regexp.Compile("{#\\s*" + quotedKey + "\\s*#}") // {#marker#}
+		re, _ = regexp.Compile("{#\\s*" + key + "\\s*#}") // {#marker#}
 		content = re.ReplaceAllString(content, value)
-		re, _ = regexp.Compile("{~\\s*" + quotedKey + "\\s*~}") // {~marker~}
+		re, _ = regexp.Compile("{~\\s*" + key + "\\s*~}") // {~marker~}
 		content = re.ReplaceAllString(content, value)
-		re, _ = regexp.Compile("{\\*\\s*" + quotedKey + "\\s*\\*}") // {*marker*}
+		re, _ = regexp.Compile("{\\*\\s*" + key + "\\s*\\*}") // {*marker*}
 		content = re.ReplaceAllString(content, value)
 	}
 	return content
@@ -55,14 +54,15 @@ func ProcessMarkers(markers map[string]interface{}, markers_split map[string]int
 		stringValue := value.(string)
 		splitChar := markers_split[key]
 		if splitChar == nil || splitChar.(string) == "" {
-			output[key] = stringValue
+			output[key] = regexp.QuoteMeta(stringValue)
 			continue
 		}
 
 		// Split value by character
 		for i, slice := range strings.Split(stringValue, splitChar.(string)) {
-			output[fmt.Sprintf("%s[%d]", key, i)] = slice
+			output[fmt.Sprintf(regexp.QuoteMeta("%s[%d]"), key, i)] = slice
 		}
+		output[fmt.Sprintf(regexp.QuoteMeta("%s[%s]"), key, "\\d+")] = ""
 	}
 	return output
 }
