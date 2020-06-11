@@ -11,10 +11,10 @@ resource "nginx_server_block" "my-server" {
   enable = true
   markers = {
     docker_port = docker_container.web.ports.external
-    docker_ports = [
-      docker_container.web.ports.external,
-      docker_container.web2.ports.external
-    ]
+    docker_ports = "${docker_container.web.ports.external},${docker_container.web2.ports.external}"
+  }
+  markers_split = {
+    docker_ports = ","
   }
   content = <<EOF
 # content of file here

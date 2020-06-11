@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strings"
 )
 
 func getNginxDirectories(filename string, m Config) (string, string) {
@@ -17,12 +18,12 @@ func getNginxDirectories(filename string, m Config) (string, string) {
 	return pathAvailable, pathEnabled
 }
 
-func CreateOrUpdateServerBlock(filename string, content string, m Config, markers map[string]interface{}) (string, error) {
+func CreateOrUpdateServerBlock(filename string, content string, m Config, markers map[string]interface{}, markers_split map[string]interface{}) (string, error) {
 	fullPathAvailable, _ := getNginxDirectories(filename, m)
 
 	// Replace markers in content
 	var re *regexp.Regexp
-	for key, value := range ProcessMarkers(markers) {
+	for key, value := range ProcessMarkers(markers, markers_split) {
 		quotedKey := regexp.QuoteMeta(key)
 		re, _ = regexp.Compile("{#\\s*" + quotedKey + "\\s*#}") // {#marker#}
 		content = re.ReplaceAllString(content, value)
@@ -39,20 +40,22 @@ func CreateOrUpdateServerBlock(filename string, content string, m Config, marker
 }
 
 /// ProcessMarkers resolves array values into single string replaces
-func ProcessMarkers(markers map[string]interface{}) map[string]string {
+func ProcessMarkers(markers map[string]interface{}, markers_split map[string]interface{}) map[string]string {
+	markers_split_keys := make([]string, 0, len(markers_split))
+	for k := range markers_split {
+		markers_split_keys = append(markers_split_keys, k)
+	}
+
 	output := make(map[string]string)
 	for key, value := range markers {
-		switch value.(type) {
-		case []string:
-			// Resolve array references if value is array
-			for i, slice := range value.([]string) {
+		stringValue := value.(string)
+		if markers_split[key].(string) != "" {
+			// Split value by character
+			for i, slice := range strings.Split(stringValue, markers_split[key].(string)) {
 				output[fmt.Sprintf("%s[%d]", key, i)] = slice
 			}
-			break
-		default:
-			// Pass string as is
-			output[key] = value.(string)
-			break
+		} else {
+			output[key] = stringValue
 		}
 	}
 	return output

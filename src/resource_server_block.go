@@ -34,6 +34,12 @@ func resourceServerBlock() *schema.Resource {
 				ForceNew:    true,
 				Description: "Markers in content that should be replaced",
 			},
+			"markers_split": &schema.Schema{
+				Type:        schema.TypeMap,
+				Default:     "",
+				Description: "Define marker name as key and the character where the string is split as value. Chunks can be accessed as array",
+				Optional:    true,
+			},
 			"enable": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -49,7 +55,7 @@ func resourceServerBlockCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Create file
 	content := d.Get("content").(string)
-	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]interface{}))
+	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]interface{}), d.Get("markers_split").(map[string]interface{}))
 	if err != nil {
 		return err
 	}
@@ -82,7 +88,7 @@ func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 func resourceServerBlockUpdate(d *schema.ResourceData, m interface{}) error {
 	// Content changed: replace old file content
 	if d.HasChange("content") || d.HasChange("variables") {
-		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]interface{}))
+		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]interface{}), d.Get("markers_split").(map[string]interface{}))
 		if err != nil {
 			return err
 		}
