@@ -1,4 +1,4 @@
-name: Build and release
+name: Test and build
 
 on:
   push:
@@ -9,9 +9,7 @@ on:
     - master
 
 jobs:
-
-  buildAndRelease:
-    name: Build and release
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.13
@@ -26,23 +24,23 @@ jobs:
         working-directory: src
         run: go test -v ./...
 
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
       - name: Build
         working-directory: src
         run: go build -o ../dist/terraform-provider-nginx .
 
-      - name: Setup node
-        uses: actions/setup-node@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
-          node-version: 12
-      - name: PNPM install
-        run: npm i -g pnpm && pnpm i -P
-      - run: pnpm install
-      - name: Semantic Release Action
-        uses: saitho/semantic-release-action-pnpm@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-    env:
-      GIT_AUTHOR_EMAIL: 64205253+stackhead-bot@users.noreply.github.com
-      GIT_AUTHOR_NAME: stackhead-bot
-      GIT_COMMITTER_EMAIL: 64205253+stackhead-bot@users.noreply.github.com
-      GIT_COMMITTER_NAME: stackhead-bot
+          path: dist/terraform-provider-nginx
