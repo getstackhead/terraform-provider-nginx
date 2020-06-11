@@ -22,7 +22,7 @@ jobs:
 
       - name: Test
         working-directory: src
-        run: go test -v ./...
+        run: go clean -testcache && go test -v ./...
 
   build:
     needs: test
