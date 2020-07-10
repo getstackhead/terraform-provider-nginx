@@ -8,6 +8,67 @@ import (
 	"stackhead.io/terraform-nginx-provider/src/nginx"
 )
 
+func serverConfiguration() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"listen": {
+				Type:     schema.TypeInt,
+				Default:  80,
+				Optional: true,
+			},
+			"server_name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"https": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"forward_https": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"forward_acme": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
+			"locations": {
+				Type: schema.TypeList,
+				Elem: schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"path": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"auth_basic": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"auth_basic_user_file": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"root": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"use_php_version": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+				Required:    true,
+				ForceNew:    true,
+				Description: "Server block locations",
+			},
+		},
+	}
+}
+
 func resourceServerBlock() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceServerBlockCreate,
@@ -16,31 +77,32 @@ func resourceServerBlock() *schema.Resource {
 		Delete: resourceServerBlockDelete,
 
 		Schema: map[string]*schema.Schema{
-			"filename": &schema.Schema{
+			"filename": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Name of the configuration file",
 			},
-			"content": &schema.Schema{
-				Type:        schema.TypeString,
+			"configurations": {
+				Type:        schema.TypeList,
+				Elem:        serverConfiguration(),
 				Required:    true,
 				ForceNew:    true,
-				Description: "Content of the configuration file",
+				Description: "Server block configurations",
 			},
-			"markers": &schema.Schema{
+			"markers": {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Markers in content that should be replaced",
 			},
-			"markers_split": &schema.Schema{
+			"markers_split": {
 				Type:        schema.TypeMap,
 				Default:     "",
 				Description: "Define marker name as key and the character where the string is split as value. Chunks can be accessed as array",
 				Optional:    true,
 			},
-			"enable": &schema.Schema{
+			"enable": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
@@ -54,7 +116,7 @@ func resourceServerBlockCreate(d *schema.ResourceData, m interface{}) error {
 	config := m.(nginx.Config)
 
 	// Create file
-	content := d.Get("content").(string)
+	content := nginx.BuildConfiguration(d)
 	fullPathAvailable, err := nginx.CreateOrUpdateServerBlock(d.Get("filename").(string), content, config, d.Get("markers").(map[string]interface{}), d.Get("markers_split").(map[string]interface{}))
 	if err != nil {
 		return err
@@ -79,6 +141,7 @@ func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.Set("filename", filepath.Base(d.Id()))
+	// todo: parse file and set properties - use https://github.com/lytics/confl
 	d.Set("content", content)
 	fullEnabledPath := strings.Replace(d.Id(), availablePath, enabledPath, 1)
 	d.Set("enable", nginx.FileExists(fullEnabledPath))
@@ -87,8 +150,8 @@ func resourceServerBlockRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceServerBlockUpdate(d *schema.ResourceData, m interface{}) error {
 	// Content changed: replace old file content
-	if d.HasChange("content") || d.HasChange("variables") {
-		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), d.Get("content").(string), m.(nginx.Config), d.Get("markers").(map[string]interface{}), d.Get("markers_split").(map[string]interface{}))
+	if d.HasChange("configurations") || d.HasChange("variables") {
+		_, err := nginx.CreateOrUpdateServerBlock(d.Id(), nginx.BuildConfiguration(d), m.(nginx.Config), d.Get("markers").(map[string]interface{}), d.Get("markers_split").(map[string]interface{}))
 		if err != nil {
 			return err
 		}
