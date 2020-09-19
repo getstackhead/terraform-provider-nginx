@@ -1,7 +1,8 @@
-package main
+package terraform
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"stackhead.io/terraform-nginx-provider/src/nginx"
 )
 
