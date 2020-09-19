@@ -28,6 +28,7 @@ builds:
     ignore:
       - goos: darwin
         goarch: '386'
+    main: ./src/main.go
     binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
   - format: zip
